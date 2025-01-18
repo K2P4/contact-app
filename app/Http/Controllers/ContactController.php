@@ -26,7 +26,14 @@ class ContactController extends Controller implements HasMiddleware
      */
     public function index()
     {
-        return Contact::with('user')->latest()->get();
+
+        $contacts = Contact::where("user_id", auth()->id())->latest()->get()->paginate(10);
+
+
+        return response()->json([
+            "success" => true,
+            "contacts" => $contacts
+        ]);
     }
 
     /**
@@ -74,7 +81,7 @@ class ContactController extends Controller implements HasMiddleware
         return ['contact' => $contact, 'user' => $contact->user];
     }
 
-   
+
 
 
 

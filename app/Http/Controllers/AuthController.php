@@ -19,41 +19,58 @@ class AuthController extends Controller
         $user = User::create($fields);
 
         $token = $user->createToken($request->name);
-        return [
-            'user' => $user,
-            'token' => $token->plainTextToken
-        ];
+        return response()->json([
+            "success" => true,
+            "user" => $user,
+            "message" => "$user->name is register successful.",
+            "token" => $token->plainTextToken
+        ]);
     }
 
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users',
+            'email' => 'required|email|exists:users,email',
             'password' => 'required'
         ]);
 
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return [
+            return response()->json([
+                'success' => false,
                 'errors' => [
-                    'email' => ['Your information is wrong .']
+                    'email' => ['Your information is incorrect.']
                 ]
-            ];
+            ], 401);
         }
-
-
         $token = $user->createToken($user->name);
 
-        return [
-            'user' => $user,
-            'token' => $token->plainTextToken
-        ];
+        return response()->json([
+            "success" => true,
+            "message" => "Login successfully",
+            "user" =>  $user,
+            "token" => $token->plainTextToken
+        ], 200);
     }
 
-    public function profile()
+    public function profile(Request $request)
     {
-        return auth()->user();
+
+        $user = $request->user(); // Get authenticated user
+
+        if (!$user) {
+            return response()->json([
+                "success" => false,
+                "message" => "Unauthorized",
+            ], 401);
+        }
+
+        return response()->json([
+            "success" => true,
+            "message" => "User information retrieved successfully",
+            "user" => $user
+        ], 200);
     }
 
     public function logout(Request $request)
@@ -61,6 +78,7 @@ class AuthController extends Controller
         $request->user()->tokens()->delete();
 
         return [
+            "success" => true,
             'message' => 'You are logged out.'
         ];
     }
