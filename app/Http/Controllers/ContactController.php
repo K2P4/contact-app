@@ -26,9 +26,7 @@ class ContactController extends Controller implements HasMiddleware
      */
     public function index()
     {
-
-        $contacts = Contact::where("user_id", auth()->id())->latest()->get()->paginate(10);
-
+        $contacts = Contact::where("user_id", Auth::id())->latest()->get();
 
         return response()->json([
             "success" => true,
